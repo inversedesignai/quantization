@@ -18,6 +18,3 @@
 # Submission artefacts (kept local, not version-controlled)
 cover_letter_*.txt
 arxiv_metadata.txt
-
-# Claude Code per-machine settings
-.claude/settings.local.json
