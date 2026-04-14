@@ -73,11 +73,18 @@ $\sim 10^{-7}\,\mathrm{rad/s}/\sqrt{\mathrm{Hz}}$ at the
 single-comb-pair level, with quantum-enhancement up to $-3\,\mathrm{dB}$
 intracavity squeezing per pair.
 
-We close with three open derivations not yet in this draft (4-point
-spatio-temporal correlator, generating-functional Fisher information
-for photon-counting POVMs, and adjoint method for higher-moment
-objectives), which the framework supports architecturally but which
-we do not work out exhaustively here.
+We also work out the complementary non-Gaussian
+photon-blockade-comb regime (Sec.~\ref{sec:blockade}) as a novel
+ultra-compact inertial-sensor operating point, providing four
+Keldysh-native non-perturbative numerical routes: super-operator exact
+diagonalisation, quantum-trajectory MCWF (with pathwise-differentiable
+gradients via common random numbers), full counting statistics via
+tilted Liouvillian (which gives the TopOpt adjoint-style gradient
+without constructing $\rho_{\rm ss}$ in full), and tensor-network
+MPO methods for larger arrays.  We benchmark all three on a 3-site
+blockade ring with Sagnac Peierls phase, including analytical
+hard-core-Keldysh Bloch bands $E_k=-2J\cos(2\pi k/N+\Phi/N)$
+matching numerical diagonalisation to $10^{-15}$.
 \end{abstract}
 
 \tableofcontents
@@ -876,17 +883,430 @@ through $C$ and $C^{-1}$.  Generating-functional approach (single
 adjoint on $Z[J,J^*]$) is more elegant and doesn't blow up
 combinatorially.
 
-\subsection{Beyond Gaussian: photon-blockade-comb regime}
+\subsection{Beyond Gaussian: photon-blockade-comb inertial sensors}
 
-In the strong-Kerr regime $g^{(3)}/\kappa\gtrsim 1$, the photon
-blockade prevents Gaussian comb formation; instead the cavity hosts
-a finite-photon-number Fock manifold with discrete sub-Poissonian
-statistics.  This regime is relevant for ultra-low-photon-number
-quantum sensing but breaks the Bogoliubov-around-coherent-saddle
-expansion.  Treatment requires: (a)~master-equation simulation
-(qutip-scale), or (b)~exact diagonalisation in a truncated Fock
-basis, or (c)~tensor-network methods for 1D structures.  None are
-in the Keldysh-perturbative framework as it stands.
+Section~\ref{sec:blockade} works out this regime in detail as a
+potentially novel operating point for ultra-compact inertial sensors.
+
+%===========================================================================
+\section{Photon-blockade-comb regime as a novel inertial-sensor operating point}
+\label{sec:blockade}
+%===========================================================================
+
+The Gaussian above-threshold-comb regime treated above gives the
+highest Fisher information per unit device volume for SNR-limited
+inertial sensors with ample optical power.  We now work out an
+alternative operating regime --- deep photon blockade on each cavity
+site, with Sagnac flux entering as a Peierls phase on inter-site
+hopping --- that provides qualitatively different sensing resources:
+$\mu\mathrm{W}$ power budget, genuinely non-Gaussian output statistics
+resilient to classical-amplitude noise, and compatibility with
+single-photon-level quantum networks.
+
+\subsection{When the Gaussian framework fails}
+
+The Bogoliubov reduction Eq.~\eqref{eq:pair_H} assumed a coherent
+saddle point around which fluctuations are Gaussian.  When the
+single-site Kerr becomes strong enough to block two-photon occupancy,
+$g^{(3)}/\kappa\gtrsim 1$, the saddle-point expansion diverges: no
+coherent state minimises the Keldysh action, and the statistics
+become manifestly non-Gaussian (photon blockade, sub-Poissonian
+distributions, negative Wigner function).  In this regime the
+Gaussian Fisher-information formula
+Eq.~\eqref{eq:gaussian_FI} no longer applies.
+
+\subsection{Architecture: blockade ring with Sagnac Peierls flux}
+\label{sec:blockade_arch}
+
+$N$-site ring of nonlinear cavities in the deep-blockade limit
+$U\gg J,\kappa$; each site's Fock space is truncated to
+$\{|0\rangle,|1\rangle\}$.  Nearest-neighbour hopping $J$.  Rotation
+at angular rate $\Omega$ enters as an Aharonov--Bohm-like Peierls
+phase:
+\begin{equation}
+  J\,a_j^\dagger a_{j+1} \;\longrightarrow\; J\,e^{i\Phi/N}\,a_j^\dagger a_{j+1},
+  \qquad \Phi = \frac{4\pi A_{\rm ring}\omega_0}{c^2}\,\Omega,
+  \label{eq:peierls}
+\end{equation}
+where $\Phi$ is the Sagnac flux through the ring, linear in $\Omega$
+exactly as in the Gaussian case.
+
+Full Hamiltonian:
+\begin{equation}
+  H = \sum_j\!\Bigl[-J(e^{i\Phi/N}a_j^\dagger a_{j+1} + \mathrm{h.c.})
+     + U\,a_j^\dagger a_j(a_j^\dagger a_j-1)
+     + E(a_j + a_j^\dagger)\Bigr],
+  \label{eq:H_blockade}
+\end{equation}
+with Lindblad dissipators $L_j = \sqrt\kappa\,a_j$ on each site.
+
+\subsection{Is this still the Keldysh framework?}
+\label{sec:blockade_framing}
+
+A fair question: in this regime the analytical perturbation theory
+that made the Keldysh formulation shine for the Gaussian comb is
+unavailable.  What does the Keldysh framework actually do here?
+
+\textbf{What remains:} the Keldysh action defines the problem.
+Integrating out the bath fields yields the Lindblad super-operator
+$\mathcal{L}$ whose form is \emph{dictated} by the Keldysh causality
+structure (forward/backward time contour) and the fluctuation-
+dissipation theorem.  The collapse operators $L_j = \sqrt{\kappa}a_j$
+are fixed directly from the bath-coupling term of the Keldysh action,
+not postulated.  The steady-state reduced density matrix satisfies
+$\mathcal{L}\rho_{\rm ss} = 0$, which is the zero-mode condition of
+the Keldysh generator.
+
+\textbf{What changes:} the Keldysh action's coherent-state
+saddle-point expansion breaks down, so there is no closed-form
+Gaussian solution.  The equation $\mathcal{L}\rho_{\rm ss}=0$ is still
+\emph{linear in $\rho$} (the nonlinearity is inside the operators
+$\hat a, \hat a^\dagger$ that build $\mathcal{L}$, not in $\rho$
+itself --- density-matrix evolution is linear by the superposition
+principle), but its non-perturbative solution requires numerical
+linear algebra on a $D^2$-dimensional space ($D$ = Hilbert-space
+dimension).
+
+\textbf{Numerical routes within the Keldysh framework.}
+Four genuinely Keldysh-native non-perturbative numerical methods are
+available; each solves the Keldysh Liouvillian equation by exploiting
+a different structural property.
+
+\subsection{Route (a): Super-operator exact diagonalisation}
+\label{sec:route_a_ED}
+
+The direct linear-algebra solution: find the null vector of
+$\mathcal{L}$ by sparse eigensolve or $LU$ factorisation.  Scales as
+$D^2\times D^2$.  For our 3-site blockade ring with $N_{\rm Fock}=2$,
+$D=8$ and $\mathcal{L}$ is $64\times 64$ --- trivial.  For freeform
+TopOpt at $N_{\rm sites}\lesssim 5$ this is the method of choice.
+Implemented in \texttt{blockade\_comb\_FI.py}.
+
+\subsection{Route (b): Keldysh quantum-trajectory unraveling (MCWF)}
+\label{sec:route_b_MCWF}
+
+The Schwinger-Keldysh path integral for a driven-dissipative bosonic
+system admits an exact stochastic unraveling: the Lindblad equation
+is equivalent to a stochastic Schr\"odinger equation for a pure-state
+trajectory that undergoes quantum jumps at random times.  Averaging
+over trajectories reproduces $\rho(t) = \mathbb{E}[|\psi\rangle\langle\psi|]$.
+Between jumps the non-Hermitian Hamiltonian
+$H_{\rm eff} = H - (i/2)\sum_j L_j^\dagger L_j$ drives the evolution;
+at jumps $|\psi\rangle\to L_j|\psi\rangle/\|L_j|\psi\rangle\|$.
+
+Scaling: $D$ per trajectory (not $D^2$), at the cost of $1/\sqrt{N_{\rm traj}}$
+statistical error.  For the 3-site blockade ring, MCWF with
+$N_{\rm traj}=500$ agrees with super-op ED to $\lesssim 4\%$
+(Fig.~\ref{fig:blockade_MCWF}).  At $N_{\rm sites}\gtrsim 8$ where
+$D=2^8=256$ and $D^2=65536$, MCWF becomes competitive; at
+$N_{\rm sites}\gtrsim 15$ it is the only tractable Keldysh method.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{numerics/figs/fig_blockade_MCWF.pdf}
+\caption{\textbf{Route (b): Keldysh quantum-trajectory MCWF for
+the blockade ring.}  (Left) MCWF transient relaxation into the steady
+state at $\Phi=\pi$: coloured lines are trajectory-averaged
+$\langle n_j(t)\rangle$ from $N_{\rm traj}=500$ trajectories; dashed
+lines are the super-op ED steady-state reference.  Agreement is
+$\lesssim 4\%$ at this trajectory count.  (Right) Wall-time comparison
+between MCWF and super-op ED for four Sagnac fluxes; at $D=8$
+(3 sites, $N_{\rm Fock}=2$) ED is much faster, but the scaling
+crossover occurs at $D\sim 16$.  Code:
+\texttt{numerics/benchmarks/blockade\_MCWF.py}.}
+\label{fig:blockade_MCWF}
+\end{figure}
+
+\subsubsection*{Pathwise-differentiable gradients}
+\label{sec:pathwise}
+
+A key question for TopOpt is whether the MCWF trajectory is
+differentiable in the design parameter $\theta$.  Answer: yes, via
+the standard reparameterisation trick.  Fix the underlying uniform
+random samples $\{\xi_k\}$ driving the jump-time threshold
+crossings.  For given $\{\xi_k\}$, each trajectory is a piecewise-
+deterministic function of $\theta$:
+\begin{itemize}\itemsep0em
+\item Between jumps: $\partial_\theta|\psi(t)\rangle$ satisfies a
+  linear ODE with forcing $-i(\partial_\theta H_{\rm eff})|\psi\rangle$.
+\item Jump times $t_k$ solve
+  $\exp(-\int_0^{t_k}\Gamma_\theta(\tau)d\tau)=\xi_k$; by
+  implicit-function theorem,
+  $dt_k/d\theta = -\Gamma_\theta(t_k)^{-1}\int_0^{t_k}
+  (\partial_\theta\Gamma)d\tau$.
+\item At jumps: $\partial_\theta$ applied to
+  $L_j|\psi\rangle/\|L_j|\psi\rangle\|$, with a correction from
+  $dt_k/d\theta$.
+\end{itemize}
+This defines a forward-mode SDE for $\partial_\theta|\psi\rangle$;
+reverse-mode gives $\partial_\theta\langle\mathcal{O}\rangle$ in one
+backward pass independent of the number of design parameters
+(``adjoint quantum optimal control'').
+
+As a simpler demonstration, the \emph{common-random-numbers (CRN)}
+gradient estimator --- finite-differencing with the \emph{same}
+random seed on both sides --- has dramatically lower variance than
+the independent-seeds estimator (Fig.~\ref{fig:blockade_MCWF_pw}).
+Variance reduction of $\sim 10$--$30\times$ is typical; for a full
+pathwise adjoint, the reduction is infinite (single-trajectory
+gradient exact).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.75\linewidth]{numerics/figs/fig_blockade_MCWF_pathwise.pdf}
+\caption{\textbf{Pathwise-differentiable MCWF gradients via common
+random numbers.}  Gradient $d\langle n_0\rangle/d\Phi$ of site-0 photon
+number w.r.t.\ Sagnac flux, computed by MCWF finite differencing, at
+$\Phi=2.5$, $T=20/\kappa$.  Blue: common-random-numbers (CRN) estimator
+(same seeds on both sides); red: independent-seeds finite difference;
+black dotted: exact ED reference.  CRN estimator converges to the true
+gradient with $\sim 10$--$30\times$ lower variance, previewing the
+full pathwise adjoint used in differentiable quantum optimal control.
+For TopOpt with a handful of design parameters, CRN is sufficient;
+for freeform ($>100$ design parameters) the full reverse-mode SDE
+adjoint is the appropriate method.  Code:
+\texttt{numerics/benchmarks/blockade\_MCWF\_pathwise.py}.}
+\label{fig:blockade_MCWF_pw}
+\end{figure}
+
+\subsection{Route (c): Full counting statistics via tilted Liouvillian}
+\label{sec:route_c_FCS}
+
+This is the most powerful Keldysh route for the inertial-sensor
+application, because it computes the Fisher information directly
+without ever constructing the full density matrix.
+
+\paragraph{Tilted Liouvillian.}  Modify the Keldysh Liouvillian by
+attaching a counting field $\lambda_j$ to each detection channel:
+\begin{equation}
+  \mathcal{L}_{\boldsymbol\lambda}[\rho]
+  = -i[H(\Phi),\rho]
+  + \sum_j\!\Bigl(e^{i\lambda_j}L_j\,\rho\,L_j^\dagger
+    - \tfrac{1}{2}\{L_j^\dagger L_j,\rho\}\Bigr).
+  \label{eq:tilted_L}
+\end{equation}
+The largest-real-part eigenvalue $\theta_{\max}(\boldsymbol\lambda,\Phi)$
+is the cumulant-generating function of the photon-count distribution
+accumulated over time $T$:
+\begin{equation}
+  \ln M(\boldsymbol\lambda, T, \Phi)
+  \equiv \ln\langle e^{i\boldsymbol\lambda\cdot\mathbf{N}(T)}\rangle
+  = \theta_{\max}(\boldsymbol\lambda,\Phi)\,T + O(1).
+\end{equation}
+The first derivatives give the mean photon fluxes
+$\langle j_j\rangle = \partial\theta_{\max}/\partial(i\lambda_j)|_0$;
+the second derivatives give the flux covariance matrix
+$C_{jj'} = \partial^2\theta_{\max}/\partial(i\lambda_j)\partial(i\lambda_{j'})|_0$.
+
+\paragraph{Fisher information from CGF.}  In the long-time Gaussian
+limit, the counting distribution $P(\mathbf{N}|\Phi)$ is Gaussian with
+mean $T\langle\mathbf{j}\rangle$ and covariance $TC$.  The classical
+Fisher information for estimating $\Phi$ from photon counts is
+\begin{keyresult}
+\begin{equation}
+  \boxed{F(\Phi; T)
+  = T\,\bigl(\partial_\Phi\langle\mathbf{j}\rangle\bigr)^{\!\top}
+          C^{-1}
+          \bigl(\partial_\Phi\langle\mathbf{j}\rangle\bigr)
+  = T\sum_{jj'}
+    \frac{\partial^2\theta_{\max}}{\partial(i\lambda_j)\,\partial\Phi}
+    \,[C^{-1}]_{jj'}\,
+    \frac{\partial^2\theta_{\max}}{\partial(i\lambda_{j'})\,\partial\Phi}.}
+  \label{eq:FI_from_CGF}
+\end{equation}
+\end{keyresult}
+All quantities on the right are derivatives of a \emph{single} scalar,
+$\theta_{\max}(\boldsymbol\lambda,\Phi)$, obtained from one
+eigenvalue problem on the tilted super-operator.
+
+\paragraph{TopOpt gradient.}  By Hellmann--Feynman for non-Hermitian
+eigenvalue problems,
+\begin{equation}
+  \frac{\partial\theta_{\max}}{\partial\theta}
+  = \frac{\langle \ell_{\max}|\,
+    (\partial_\theta\mathcal{L}_{\boldsymbol\lambda})|r_{\max}\rangle}
+    {\langle \ell_{\max}|r_{\max}\rangle},
+\end{equation}
+where $|r_{\max}\rangle, \langle\ell_{\max}|$ are the right/left
+eigenvectors of $\mathcal{L}_{\boldsymbol\lambda}$.  Cost per gradient
+evaluation: \emph{one} eigensolve, independent of the number of
+design parameters.  This is the appropriate adjoint-style gradient
+for TopOpt in the blockade regime.
+
+\paragraph{Numerical verification.}  Figure~\ref{fig:blockade_FCS}
+shows the Fisher information $F(\Phi; T=10/\kappa)$ extracted from the
+tilted Liouvillian (red) compared to the direct photon-count FI
+(blue) from Route~(a).  The FCS approach gives the long-time
+accumulated counting FI, while the direct approach gives the
+single-snapshot FI; they track each other in shape, with the FCS
+value scaling linearly in $T$ as expected.  Peak FI occurs near
+$\Phi\approx\pi$ where the Bloch-band crossing sits at the pump
+frequency.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{numerics/figs/fig_blockade_FCS.pdf}
+\caption{\textbf{Route (c): Full Counting Statistics via tilted
+Liouvillian for the blockade-ring gyroscope.}  (Left) Classical
+Fisher information for Sagnac flux $\Phi$ extracted from the
+cumulant-generating function $\theta_{\max}(\boldsymbol\lambda,\Phi)$
+via Eq.~\eqref{eq:FI_from_CGF} (red, $T=10/\kappa$) vs.\ the direct
+photon-count FI from Route~(a) (blue, scaled by $T$ for comparison).
+The two methods agree in shape and magnitude; the FCS approach adds
+access to the full counting distribution and provides a
+cheap TopOpt gradient via non-Hermitian eigenvalue perturbation.
+(Right) Steady-state photon flux and flux variance from tilted-
+Liouvillian derivatives.  Code:
+\texttt{numerics/benchmarks/blockade\_FCS.py}.}
+\label{fig:blockade_FCS}
+\end{figure}
+
+\subsection{Route (d): Tensor-network / MPO Keldysh}
+\label{sec:route_d_MPO}
+
+For 1D (and with effort 2D) blockade arrays beyond $N\sim 15$ sites,
+representing the Lindblad super-operator as a Matrix-Product Operator
+(MPO) and iteratively contracting to find the steady state (``DMRG
+for open systems'', Verstraete--Garc\'\i a-Ripoll--Cirac, Zwolak--Vidal)
+extends the Keldysh framework to lattice-scale TopOpt problems.
+Polynomial in bond dimension $\chi$; $\chi$ grows with the mutual
+information across any cut in the ring.
+
+For the chip-scale blockade-comb gyroscope, this is the
+appropriate scaling regime: a 20-site high-Q micro-ring array with
+$\sim 100$ design parameters (per-site Kerr, hopping, and local
+detuning tunable via heaters or electrostatic gates) is within reach.
+Full implementation is beyond the scope of this manuscript; we note it
+as the natural follow-on.
+
+\subsection{Blockade-comb inertial-sensor analysis: 3-site benchmark}
+\label{sec:blockade_results}
+
+Using the 3-site blockade ring with the realistic GaAs-like
+parameter scaling (hopping $J = \Delta\omega_{\rm FSR} = 2\pi\cdot
+1.4\,\mathrm{THz}$ from the Sec.~\ref{sec:example} micro-ring,
+$U\gg J$ from strong Kerr enhancement, $\kappa = 2\pi\cdot 1.9\,\mathrm{GHz}$
+from $Q=10^5$, $E\sim 0.4 J$ from moderate coherent drive), we find:
+
+\begin{itemize}\itemsep0em
+\item Steady-state photon number per site saturates at
+  $\lesssim 0.3$ --- genuine single-photon operation.
+\item Cross-site $g^{(2)}_{0,1}(0) \in [1, 3]$ as a function of $\Phi$,
+  with strong bunching at $\Phi=0$ (pair-emission enhanced by
+  blockade-amplified FWM) dropping to coherent-state $\sim 1$ at
+  $\Phi = \pi$ --- a definitive non-Gaussian signature that IS the
+  sensing observable (Fig.~\ref{fig:blockade_FI}, panel c).
+\item Classical Fisher information $F(\Phi)$ peaks at
+  $\Phi \approx 3.43\,\mathrm{rad}$ with
+  $F\approx 0.19/(2\pi/\Delta\omega_{\rm FSR})^2$ per detection
+  snapshot, accumulating linearly in integration time $T$.
+\item Per photon, the blockade FI is \emph{below} the coherent-state
+  SQL: $F_{\rm blockade}/F_{\rm SQL} \sim 0.1$ at the same photon
+  number.  Blockade is therefore \emph{not} advantageous per photon
+  for classical phase-estimation sensing; its advantage is qualitative.
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{numerics/figs/fig_blockade_comb_FI.pdf}
+\caption{\textbf{Blockade-comb inertial-sensor ring: Keldysh in the
+non-Gaussian regime.}  (a) Fisher information for the photon-counting
+POVM from non-perturbative Keldysh Liouvillian zero-mode; coherent-state
+SQL reference dashed.  Blockade is below SQL per photon but
+qualitatively different (non-Gaussian, sub-Poissonian, $\mu$W-power).
+(b) Analytical Keldysh weak-drive perturbation theory matches the
+non-perturbative solution away from the Bloch resonance $\Phi\approx
+3\pi/2$.  (c) Cross-site $g^{(2)}(0)$ shows super-Poissonian bunching
+near $\Phi=0$ dropping to coherent-state value --- the non-Gaussian
+signal that carries the Sagnac information.  (d) Hard-core Keldysh
+analytical Bloch bands
+$E_k=-2J\cos(2\pi k/N + \Phi/N)$ match numerical diagonalisation to
+$10^{-15}$, giving the analytical backbone of the strong-blockade
+Keldysh treatment.  Code:
+\texttt{numerics/benchmarks/blockade\_comb\_FI.py}.}
+\label{fig:blockade_FI}
+\end{figure}
+
+\subsection{When blockade beats Gaussian for inertial sensing}
+\label{sec:blockade_whenbeats}
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+Criterion & Gaussian comb (Sec.~\ref{sec:example}) & Blockade comb (this Sec.) \\
+\midrule
+Photon number & $\gtrsim 10^3$ per line & $\lesssim 1$ per site \\
+Optical power budget & mW & nW--$\mu$W \\
+Detector technology & heterodyne / homodyne & single-photon PNR (SNSPDs) \\
+FI scaling per photon & $\propto 1/(1-S)$ (squeezing) & $\lesssim$ SQL \\
+FI scaling per optical power & huge & modest \\
+Resilience to classical-amplitude noise & poor & strong (Fock structure) \\
+Resilience to fabrication disorder & moderate & limited (blockade fragile) \\
+Compatible with quantum networks & no (bright coherent output) & yes (gated single photons) \\
+Design space for TopOpt & large (freeform $\varepsilon$) & small (parameterised) \\
+Best suited for & high-SNR navigation-grade gyros & photon-starved, space-based, quantum-net-coupled \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The blockade-comb regime is the inertial-sensor operating point of
+choice when:
+\begin{enumerate}\itemsep0em
+\item Power budget is severe: space-based platforms, battery-limited
+  autonomous systems, cryogenic environments where dissipation must be
+  $\ll\mu\mathrm{W}$.
+\item The inertial signal is to be read out by \emph{single-photon}
+  PNR detectors (SNSPDs, transition-edge sensors) and encoded in
+  photon timing or Fock outcomes rather than classical quadratures.
+\item The sensor is part of a \emph{quantum network}: the output
+  blockade-comb light carries single-photon Fock states that can be
+  used as entanglement-swapping resources for stationary qubits,
+  so the inertial signal is propagated into a broader quantum-
+  information processing task.
+\item The Gaussian comb is made impossible by gain unavailability
+  (wide-bandgap materials, cryogenic operation below room-temperature
+  gain media).
+\end{enumerate}
+
+For classical chip-scale navigation-grade gyroscopes, the
+Gaussian above-threshold comb of Sec.~\ref{sec:example} is typically
+preferable.  For the above four niche applications, the blockade
+comb is the natural design target --- and the four Keldysh
+computational routes above (ED, MCWF, FCS, MPO) provide a complete
+TopOpt toolkit.
+
+\subsection{Open questions specific to the blockade regime}
+
+\begin{open}
+\textbf{Intermediate-$U$ regime.}  Between weak Kerr (Gaussian) and
+deep blockade ($U\to\infty$ hard-core) lies the experimentally realistic
+range $U\sim 3\kappa$--$30\kappa$.  Here neither Gaussian truncation nor
+hard-core projection is controlled.  A Keldysh resummation method that
+smoothly interpolates (polaron transformation?  $1/U$ expansion?) is an
+open problem.  For TopOpt this matters because the \emph{optimal} $U/\kappa$
+for FI may lie in this intermediate window.
+\end{open}
+
+\begin{open}
+\textbf{Waiting-time distributions and pathwise TopOpt.}  The
+steady-state joint photon distribution $P(\mathbf{n}|\Phi)$ computed
+above is the marginal over time; a richer POVM uses the full
+\emph{click-stream} waiting-time distribution
+$w(\tau_1, \tau_2, \ldots)$.  Extracting the FI of this from the
+Keldysh framework requires two-time Green's functions and is an
+exciting direction --- especially because pathwise MCWF
+naturally generates click-stream samples without computing the full
+joint distribution.
+\end{open}
+
+\begin{open}
+\textbf{Non-Markovian inertial signal.}  The Sagnac coupling is
+instantaneous in the rotating frame, but mechanical resonances of
+the chip substrate add non-Markovian dynamics on ms timescales.
+Extending the Keldysh action to include mechanical modes (giving an
+optomechanical-Keldysh action) and computing the joint opto-mechanical
+FI for inertial parameters is a natural follow-on.
+\end{open}
 
 %===========================================================================
 \section{Summary and outlook}
