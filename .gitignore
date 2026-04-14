@@ -12,12 +12,7 @@
 *.snm
 *.vrb
 
-# Compiled manuscripts (regenerable from .tex)
-/qnm_final.pdf
-/qnm_prxq.pdf
-
-# Allow figure PDFs (needed to compile the manuscripts)
-!numerics/figs/*.pdf
+# (manuscript PDFs and figure PDFs are tracked)
 
 # PNG previews are redundant with PDFs
 *.png
