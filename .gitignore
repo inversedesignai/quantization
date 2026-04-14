@@ -12,8 +12,19 @@
 *.snm
 *.vrb
 
-# Compiled output
-*.pdf
+# Compiled manuscripts (regenerable from .tex)
+/qnm_final.pdf
+/qnm_prxq.pdf
+
+# Allow figure PDFs (needed to compile the manuscripts)
+!numerics/figs/*.pdf
+
+# PNG previews are redundant with PDFs
+*.png
+
+# Python bytecode
+__pycache__/
+*.pyc
 
 # Submission artefacts (kept local, not version-controlled)
 cover_letter_*.txt
