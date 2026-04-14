@@ -1,0 +1,23 @@
+# LaTeX intermediates (regenerable from .tex sources)
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+
+# Compiled output
+*.pdf
+
+# Submission artefacts (kept local, not version-controlled)
+cover_letter_*.txt
+arxiv_metadata.txt
+
+# Claude Code per-machine settings
+.claude/settings.local.json
