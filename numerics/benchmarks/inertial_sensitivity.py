@@ -31,10 +31,12 @@ def sagnac_coupling(R, lam):
 
 def strategy_A_SQL(m_p, N_lines, n_photon, T_sec):
     """Classical Sagnac beat, shot-noise-limited (no quantum enhancement).
-    F = N * (2 m_p)^2 * n * T^2   (Fisher info for Ω from CW/CCW beat)
-    sigma_Omega = 1/sqrt(F)
+    Optimal balanced-homodyne detection of CW/CCW beat at each comb line:
+        F_phi = 4 n  (coherent state QFI for phase estimation)
+        F_Omega = 4n * (2 m_p T)^2 = 16 m_p^2 n T^2 per line
+    For N lines: F = 16 N m_p^2 n T^2
     """
-    F = N_lines * (2*m_p)**2 * n_photon * T_sec**2
+    F = 16 * N_lines * m_p**2 * n_photon * T_sec**2
     sigma = 1/np.sqrt(F)
     return F, sigma
 
@@ -48,8 +50,10 @@ def strategy_A_squeezed(m_p, N_lines, n_photon, T_sec, S):
 
 def strategy_B(N_lines, n_photon, T_sec, S):
     """Pure χ^(3) FWM-entangled differential strategy.
-    F = 16 * n * T^2 * (1+S)/(1-S) * N(N+1)(2N+1)/6
-       (signal = 2*m * Omega for m-th pair; sum over m = 1 to N_lines)
+    Signal 2m*Omega per pair (differential within same-direction ±m lines);
+    F_pair = 4n * (2m T)^2 * (1+S)/(1-S) = 16 m^2 n T^2 * (1+S)/(1-S)
+    Sum over m = 1 to N_lines:
+        F = 16 n T^2 (1+S)/(1-S) * N(N+1)(2N+1)/6
     """
     sum_m2 = N_lines*(N_lines+1)*(2*N_lines+1)/6
     F = 16 * n_photon * T_sec**2 * (1+S)/(1-S) * sum_m2
