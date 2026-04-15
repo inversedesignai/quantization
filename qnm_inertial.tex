@@ -6,6 +6,7 @@
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{tcolorbox}
@@ -18,6 +19,8 @@
                       fonttitle=\bfseries,breakable}
 \newtcolorbox{open}{colback=orange!5,colframe=orange!55,title=Open question,
                     fonttitle=\bfseries,breakable}
+\newtcolorbox{warnbox}{colback=yellow!8,colframe=orange!70,title=Assumption,
+                       fonttitle=\bfseries,breakable}
 
 \newcommand{\zpf}{{\rm zpf}}
 \newcommand{\NL}{{\rm NL}}
@@ -549,6 +552,88 @@ operating regime.
 \label{sec:FI}
 %===========================================================================
 
+\subsection{Measurement protocol and the likelihood function}
+\label{sec:measurement_protocol}
+
+Before writing any Fisher-information formula we must fix the
+measurement POVM.  Different detection schemes give different
+likelihood functions $P(\mathbf{x}|\Omega)$, each with its own classical
+Fisher information; only the \emph{quantum} Fisher information (QFI)
+is detector-independent, and for an entangled multimode Gaussian state
+the QFI is generally attained only by a non-trivially engineered
+detection.
+
+We distinguish three families of comb-output detection:
+
+\begin{description}
+\item[Homodyne (Gaussian POVM, phase-sensitive).]  Project onto a
+  coherent-state quadrature $\hat x_\theta = (\hat a e^{-i\theta}
+  + \hat a^\dag e^{i\theta})/\sqrt2$.  The outcome is a continuous
+  Gaussian variable with mean and variance linear in the state's
+  first and second moments.  For a Gaussian state this POVM yields a
+  Gaussian likelihood, and the classical Fisher information takes the
+  well-known form
+  \begin{equation}
+    F_{\rm hom}(\Omega)
+    = \boldsymbol{\mu}'^T C^{-1}\boldsymbol{\mu}'
+    + \tfrac12\,\mathrm{Tr}\!\left[(C^{-1}C')^2\right],
+    \label{eq:FI_homodyne}
+  \end{equation}
+  with $\boldsymbol{\mu}$, $C$ the mean and covariance of the
+  \emph{measured quadratures}.  With optimised local-oscillator phase
+  (phase-conjugate readout of each $\{+m,-m\}$ pair), homodyne
+  saturates the QFI for pure two-mode squeezed states; all
+  sensitivities quoted in the worked example of
+  Sec.~\ref{sec:example} are this case.
+
+\item[Heterodyne (Gaussian POVM, phase-insensitive).]  Project onto
+  coherent states $|\beta\rangle$ by mixing with a detuned
+  local oscillator; outcome is a pair of quadratures per mode.
+  Equivalent to a beamsplitter with vacuum input, so each quadrature
+  picks up an extra $1/2$ vacuum unit.  For a phase-encoded signal
+  the penalty versus optimised homodyne is exactly a factor $\sqrt2$
+  in single-shot sensitivity (factor $2$ in Fisher information).
+  Heterodyne is \emph{not} QFI-saturating for squeezed states.
+
+\item[Photon-number-resolving (PNR, non-Gaussian POVM).]  Project onto
+  Fock states $|n_+,n_-\rangle$ in the free-space comb-pair modes.
+  Even when the state $\rho(\Omega)$ is Gaussian, the outcome likelihood
+  is the \emph{Mandel distribution}
+  \begin{equation}
+    P(n_+,n_-|\Omega)
+    = \langle n_+,n_-|\rho(\Omega)|n_+,n_-\rangle,
+    \label{eq:Mandel}
+  \end{equation}
+  which is \emph{not} Gaussian and for which
+  Eq.~\eqref{eq:FI_homodyne} does not apply.  The Fisher information
+  must be computed from the discrete form
+  \begin{equation}
+    F_{\rm PNR}(\Omega)
+    = \sum_{n_+,n_-=0}^\infty \frac{1}{P(n_+,n_-|\Omega)}
+      \left(\frac{\partial P(n_+,n_-|\Omega)}{\partial\Omega}\right)^2.
+    \label{eq:FI_PNR_generic}
+  \end{equation}
+  For comb-pair inertial sensing this distribution has a closed-form
+  Laguerre-polynomial expression (Sec.~\ref{sec:PNR_FI}); the
+  resulting $F_{\rm PNR}$ is \emph{strictly smaller} than the homodyne
+  FI whenever the Sagnac parameter enters purely as a phase, because
+  PNR is phase-blind.  PNR regains the full QFI only when $\Omega$
+  modulates the \emph{intensity} (amplitude) of the comb output
+  --- which happens in the photon-blockade regime of
+  Sec.~\ref{sec:blockade}, where the state is non-Gaussian and phase
+  is not a useful encoding parameter.
+\end{description}
+
+\begin{warnbox}
+Unless stated otherwise, the Fisher-information numbers quoted below
+assume \emph{optimised homodyne readout with phase-locked local
+oscillators}, so Eq.~\eqref{eq:FI_homodyne} applies and the
+Gaussian state $\rho(\Omega)$ of the previous section is the full
+likelihood generator.  The heterodyne case is a constant
+$\times 1/2$ reduction; the PNR case is worked out separately in
+Sec.~\ref{sec:PNR_FI}.
+\end{warnbox}
+
 \subsection{Gaussian Fisher information formula}
 
 For a Gaussian state with mean $\boldsymbol{\mu}(\Omega)$ and covariance
@@ -654,6 +739,155 @@ The $m^2$ scaling is a classical interferometric gain: outer comb
 lines accumulate phase $2m$ times faster.  This is the target of the
 TopOpt objective: maximise $F_{\rm tot}$ subject to device-area,
 power-budget, and threshold-stability constraints.
+
+\subsection{Photon-number-resolving Fisher information (closed form)}
+\label{sec:PNR_FI}
+
+We now evaluate Eq.~\eqref{eq:FI_PNR_generic} for the comb-pair
+Gaussian state.  The result contains a subtle --- and important ---
+separation between \emph{direct} PNR of the raw comb output and
+PNR \emph{after a passive linear-optical processing step} (e.g.\ a
+$50{:}50$ beamsplitter, a Mach--Zehnder-like demultiplexer, or any
+unitary on the two output arms).
+
+\paragraph{Direct PNR is phase-blind (zero Fisher information).}
+For a symmetric displaced two-mode squeezed state
+\begin{equation}
+  |\psi(\Omega)\rangle
+  = \hat D_+(\alpha e^{+i m\Omega T})\,\hat D_-(\alpha e^{-i m\Omega T})\,
+    \hat S_{+-}(\xi)\,|0,0\rangle,
+  \label{eq:symDTMSS}
+\end{equation}
+the state satisfies
+$|\psi(\Omega)\rangle = e^{i m\Omega T(\hat N_+ - \hat N_-)}
+|\psi(0)\rangle$ because (a)~$\hat S_{+-}(\xi)|0,0\rangle$ is a
+$\hat N_+ - \hat N_-$ eigenstate of eigenvalue $0$ and (b)~the
+conjugation $e^{i\theta(\hat N_+-\hat N_-)}\hat D_\pm(\alpha)
+e^{-i\theta(\hat N_+-\hat N_-)} = \hat D_\pm(\alpha e^{\pm i\theta})$.
+Since $\hat N_+ - \hat N_-$ is diagonal in the Fock basis, PNR of the
+\emph{bare} comb output gives
+\begin{equation}
+  \boxed{
+    F_{\rm PNR,lab}^{(\Omega)} = 0\ \text{exactly (symmetric DTMSS).}}
+  \label{eq:F_PNR_lab_zero}
+\end{equation}
+This is a special case of the familiar fact that Sagnac phase (a
+U(1) relative phase between CW and CCW modes) requires an
+interferometric readout --- direct intensity counting on the output
+arms is phase-blind.
+
+\paragraph{PNR after 50:50 beamsplitter saturates the Gaussian QFI.}
+Introduce the BS unitary $\hat U_{\rm BS}$ and the BS-basis modes
+$\hat a_{s,d} = (\hat a_+\pm \hat a_-)/\sqrt2$.  The state
+transforms to
+\begin{equation}
+  \hat U_{\rm BS}\,|\psi(\Omega)\rangle
+  = \bigl[\hat D_s(\alpha_s(\Omega))\hat S_s(+\xi)|0\rangle\bigr]
+    \otimes
+    \bigl[\hat D_d(\alpha_d(\Omega))\hat S_d(-\xi)|0\rangle\bigr],
+\end{equation}
+with displacements
+$\alpha_s = \sqrt2|\alpha|\cos(m\Omega T)$ and
+$\alpha_d = i\sqrt2|\alpha|\sin(m\Omega T)$ and opposite-sign
+single-mode squeezings on the $(s,d)$ outputs.  PNR on the $(s,d)$
+modes therefore measures the \emph{intensity redistribution} driven
+by the Sagnac phase; in the small-phase limit the $s$-mode carries
+a nearly-constant bright displacement $\sqrt2|\alpha|$ while the
+$d$-mode displacement grows linearly with $\Omega$.
+
+A direct calculation (App.~\ref{app:PNR_FI}) shows that the BS+PNR
+Fisher information saturates the optimised-homodyne Fisher information
+from Eq.~\eqref{eq:F_enhanced}:
+\begin{keyresult}
+\begin{equation}
+  \boxed{
+  F_{\rm PNR,BS}^{(\Omega,m)} = F_{\rm hom}^{(\Omega,m)}
+  = 16\,m^2\,n_m\,T^2\,\frac{1+S_m}{1-S_m}.}
+  \label{eq:F_PNR_equals_hom}
+\end{equation}
+\end{keyresult}
+
+\paragraph{Physical interpretation.}  The BS step \emph{rotates} the
+phase-encoded Sagnac signal into an intensity-encoded signal in the
+$d$-mode.  On top of that, $\hat S_d(-\xi)$ squeezes the $d$-mode
+along exactly the quadrature into which the Sagnac displacement
+points, so the photon-number resolution along this squeezed
+quadrature recovers the full $(1+S_m)/(1-S_m)$ squeezing
+enhancement.  Photon counting plus a 50:50 beamsplitter is therefore
+a \emph{QFI-saturating} Sagnac-readout scheme for the Kerr-comb
+pair, entirely equivalent to optimised homodyne.  This is a
+passive-linear-optics-plus-click-detector readout --- no bright
+local oscillator is required, making the scheme attractive for
+cryogenic, photon-starved, or space-based sensors where an
+optical-frequency LO is a significant liability.
+
+\paragraph{When a local oscillator is still preferable.}  Despite the
+QFI-saturation above, direct homodyne is often preferred in practice
+because (i) a strong LO makes the detection technical-noise-limited
+rather than dark-current-limited, (ii) phase-drift of the LO can be
+stabilised against the pump, and (iii) multiplexing of many pairs
+is straightforward with dispersive filter banks, while the
+equivalent many-pair BS+PNR scheme requires an $N\times N$ unitary
+demultiplex.  The choice is an engineering one, not an
+information-theoretic one.
+
+\paragraph{When does PNR actually \emph{lose}?}
+Equation~\eqref{eq:F_PNR_equals_hom} assumes a symmetric DTMSS with
+equal coherent amplitudes.  For other Gaussian states (asymmetric
+displacement, non-degenerate $\xi_s$ and $\xi_d$, or loss prior to
+detection) BS+PNR generally gives $F_{\rm PNR,BS}<F_{\rm hom}$.  The
+dominant loss mechanism is detector inefficiency: a lossy PNR
+with quantum efficiency $\eta$ gives
+$F_{\rm PNR,BS}^\eta \to \eta\,F_{\rm PNR,BS}$ at leading order,
+same factor as for any other photon-counting protocol.
+
+The Sagnac rotation enters the linearised dynamics
+(Sec.~\ref{sec:bogo}) in two algebraically distinct ways:
+
+\begin{enumerate}
+\item[(i)] \emph{Phase shift} of the saddle displacement:
+  $\alpha_{\pm m}(\Omega) = |\alpha_m|\,e^{\pm i m\Omega T}$.  This is
+  the dominant Sagnac signature at small $\Omega$.
+\item[(ii)] \emph{Detuning-shift} of the two-mode squeezing angle
+  through the Bogoliubov off-diagonal term $+i\sigma m\Omega$
+  in the drift matrix $A$; this produces a weak $\Omega^2/\chi_m^2$
+  modulation of $C(\Omega)$.
+\end{enumerate}
+
+The bare photon-count channel discards contribution (i) by U(1)
+symmetry, Eq.~\eqref{eq:F_PNR_lab_zero}; the BS-then-PNR channel
+recovers both contributions, Eq.~\eqref{eq:F_PNR_equals_hom}.
+
+\paragraph{Summary of measurement-channel Fisher informations
+(comb-pair contribution per $\{+m,-m\}$).}
+
+{\small
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Measurement & $F^{(\Omega,m)}$ & Notes \\
+\midrule
+QFI (Gaussian) & $16 m^2 n_m T^2\cdot(1+S_m)/(1-S_m)$
+  & Ultimate bound~\cite{Pinel2012,Monras2006}\\
+Optimised homodyne & same & Saturates QFI (optimal LO phase)\\
+BS + PNR & same & Saturates QFI (linear optics $\to$ PNR)\\
+Heterodyne & $8 m^2 n_m T^2\cdot(1+S_m)/(1-S_m)$
+  & Factor $1/2$ vs.\ QFI \\
+Direct PNR (lab basis) & $0$
+  & Phase-blind; U(1) symmetry \\
+\bottomrule
+\end{tabular}
+\end{center}}
+
+\paragraph{When PNR wins on its own.}  In the photon-blockade regime
+(Sec.~\ref{sec:blockade}), where the state is non-Gaussian and
+Sagnac-induced amplitude (not phase) modulation is the dominant
+signature, direct PNR (without any BS step) becomes informative
+because the blockade ring breaks the phase-shift/number-shift
+equivalence on which Eq.~\eqref{eq:F_PNR_lab_zero} relied.  The
+analysis reverts to the general discrete-FI formula
+Eq.~\eqref{eq:FI_PNR_generic}; see the blockade-comb results of
+Sec.~\ref{sec:blockade}.
 
 %===========================================================================
 \section{Topology-optimisation gradient}
@@ -1549,6 +1783,636 @@ FI for inertial parameters is a natural follow-on.
 \end{open}
 
 %===========================================================================
+\section{Numerical benchmarks of the Keldysh Fisher-information pipeline}
+\label{sec:numerical_benchmarks}
+%===========================================================================
+
+This section documents a suite of self-contained numerical experiments
+that exercise the Keldysh pipeline end-to-end in regimes where the
+Gaussian/Bogoliubov machinery of Sec.~\ref{sec:bogo}--\ref{sec:FI} is
+\emph{not} applicable.  Together they demonstrate that the Keldysh
+generator $\mathcal{L}(\theta)$ --- with no linearization, no specific
+assumed likelihood shape --- delivers the Fisher information
+$F(\theta)$ end-to-end for a range of representative driven--dissipative
+nonlinear photonic problems.  All scripts live under
+\texttt{numerics/benchmarks/}.  Total aggregate run time on a single
+workstation is a few minutes.
+
+\subsection{Bistable driven Kerr cavity (Fock-basis ED)}
+\label{sec:num_bistable}
+
+\paragraph{Script.} \texttt{kerr\_bistability\_FI.py}.
+
+\paragraph{Model.} Single-mode driven Kerr cavity,
+\begin{equation}
+  H(\Delta) = -\Delta\,\hat a^\dag\hat a + \tfrac{U}{2}\hat a^{\dag 2}\hat a^2
+               + \epsilon(\hat a + \hat a^\dag),\qquad
+  L = \sqrt{\kappa}\,\hat a,
+\end{equation}
+estimating the detuning $\Delta$ (a Sagnac-shift analog) via
+photon-number-resolving detection of the cavity output.  Parameters
+($\kappa=1,\,U=0.15,\,\epsilon=1.3$) lie in the classical bistable
+regime (three mean-field branches for $\Delta\in[\sim 1.0, 1.1]\kappa$);
+the quantum steady state is a non-Gaussian mixture of the two attractors
+with large Mandel $Q$.
+
+\paragraph{Pipeline.}
+\begin{enumerate}\itemsep0em
+\item Build Lindbladian $\mathcal{L}(\Delta)[\rho] = -i[H(\Delta),\rho]
+      + \kappa\mathcal{D}[\hat a]\rho$ in Fock truncation $N_{\rm Fock}=60$.
+\item Solve $\mathcal{L}\rho_{ss}=0$ by sparse-super-operator eigendecomposition
+      (\texttt{qutip.steadystate}).
+\item Read $P(n|\Delta) = \langle n|\rho_{ss}(\Delta)|n\rangle$ directly
+      from the diagonal.
+\item Classical FI via central finite difference:
+      $F_{\rm cl}(\Delta) = \sum_n (\partial_\Delta P)^2/P$.
+\item Quantum FI via Uhlmann fidelity: $F_Q \approx 8(1-\sqrt{\mathcal{F}})/
+      (2\delta)^2$.
+\end{enumerate}
+
+\paragraph{Results.}  27 detuning points; wall time $\mathbf{6.4}$~s
+(single core, sparse LU factorisations of a $3600\times 3600$
+super-operator).  Highlights at $\Delta/\kappa=1.0$ (just before the
+bistable window): $\langle n\rangle=3.9$, Mandel $Q\approx+1$
+(super-Poissonian), $F_{\rm cl}^{\rm PNR}=37.6$, $F_Q=65$, while the
+Gaussian-linearized prediction around the upper mean-field branch gives
+$F_{\rm Gauss}=0.06$~--- \emph{underestimates the true FI by a factor of
+$\sim 600$}.  The Wigner function in the bistable window is manifestly
+bimodal (two-lobe structure; Fig.~\ref{fig:kerr_bistability}
+panel~(e2)).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{numerics/figs/fig_kerr_bistability_FI.pdf}
+\caption{End-to-end Keldysh Fisher information for the bistable driven
+Kerr cavity (Sec.~\ref{sec:num_bistable}).  Panel (a): three classical
+mean-field branches (red/blue points) and the quantum
+$\langle n\rangle$ (black) smoothly bridging them.  Panel (b): classical
+PNR Fisher information $F_{\rm cl}$ and the QFI upper bound $F_Q$
+(exact, non-linear) contrast with the Gaussian-linearized prediction
+$F_{\rm Gauss}$ which fails by two orders of magnitude inside the
+bistable window.  Panel (c): Mandel-$Q$ signature of non-Gaussianity.
+Panels (d1-d3) and (e1-e3): photon-number distribution $P(n|\Delta)$
+and Wigner function at three representative detunings, showing the
+bimodal structure in the bistable window.}
+\label{fig:kerr_bistability}
+\end{figure}
+
+\paragraph{Claim validated.}  The Fock-basis Lindbladian is a complete
+Keldysh engine for single-mode problems with $\langle n\rangle \lesssim
+N_{\rm Fock}$; it delivers $F_{\rm cl}$ and $F_Q$ without invoking any
+ansatz for the likelihood shape.  The result is a falsification of the
+claim ``linearized quantum noise theory is accurate near bifurcations''
+--- at least in this specific benchmark.
+
+\subsection{Sagnac $N$-mode Kerr ring in the blockade regime (Fock ED)}
+\label{sec:num_sagnac_ring}
+
+\paragraph{Script.} \texttt{sagnac\_ring\_multimode\_FI.py} (route~A).
+
+\paragraph{Model.} $N$-site ring with Peierls-phase Sagnac coupling:
+\begin{align}
+  H(\Phi) &= \sum_{j=1}^N\left[-\Delta\hat n_j
+       + \tfrac{U}{2}\hat n_j(\hat n_j-1)
+       + \epsilon(\hat a_j+\hat a_j^\dag)\right]\nonumber\\
+  &\quad - J\sum_j \left[e^{i\Phi/N}\hat a_j^\dag\hat a_{j+1}
+       + e^{-i\Phi/N}\hat a_{j+1}^\dag\hat a_j\right],
+\end{align}
+with $L_j = \sqrt{\kappa}\hat a_j$.  $\Phi$ is the Sagnac Peierls flux
+(estimator).  Parameters ($U=5\kappa,\,\epsilon=2,\,J=\kappa,\,
+\Delta=-0.5\kappa$) place the system in the photon-blockade comb regime
+with sub-unity occupation per site.
+
+\paragraph{Pipeline.}  Same five steps as Sec.~\ref{sec:num_bistable},
+but on the $N_{\rm Fock}^N\times N_{\rm Fock}^N$ Fock-basis density
+matrix.
+
+\paragraph{Results.}
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+$N_{\rm sites}$ & $N_{\rm Fock}$ & $D$ &
+dim $\mathcal{L}$ &
+$F_{\rm cl}(\Phi{=}2.5)$ & $F_Q(\Phi{=}2.5)$ & wall time (5 $\Phi$'s) \\
+\midrule
+2 & 4 & 16 & 256 & $0.073$ & $0.135$ & 0.27~s \\
+3 & 3 & 27 & 729 & $0.008$ & $0.037$ & 1.03~s \\
+4 & 2 & 16 & 256 & $0.001$ & $0.008$ & 0.28~s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+FI per site decreases with $N$ at fixed total photon budget, as the
+Sagnac Peierls phase distributes its signal across $N$ bonds.  All
+values are fully non-perturbative in the Kerr $U/\kappa=5$.
+
+\paragraph{What was attempted but failed.}  A matching MCWF branch
+(Route~B) targeting larger $N$ has a bookkeeping bug in qutip~5.x's
+per-trajectory state retrieval; it was returning $10^{-11}$-level
+numerical noise instead of FI.  The ED branch stands; the MCWF
+extrapolation to $N\geq 5$ awaits either an upgrade of the state-access
+API in the script or a custom MCWF loop.
+
+\paragraph{Claim validated.}  For strongly-correlated (blockade) multi-mode
+photonic lattices, Fock-basis ED delivers exact FI at modest sizes; it
+is the natural counterpart for Sec.~\ref{sec:blockade}'s
+architecture.
+
+\subsection{Bright driven Kerr in bistable window (positive-$P$ SDE)}
+\label{sec:num_positiveP}
+
+\paragraph{Script.} \texttt{kerr\_bright\_positiveP\_FI.py}.
+
+\paragraph{Motivation.}  The Fock basis is exponentially expensive in
+the bright-lasing regime $\langle n\rangle\gg 1$.  The positive-$P$
+representation~\cite{DrummondGardiner1980} is an \emph{exact}
+reformulation of the Keldysh partition function as a stochastic
+differential equation on the coherent-state manifold, with no Fock
+truncation and no linearization around any saddle.
+
+\paragraph{Model.}  Same single-mode driven Kerr Hamiltonian as
+Sec.~\ref{sec:num_bistable} but with parameters
+$(U=0.12,\,\epsilon=3.5,\,\kappa=1)$ in the classical bistable window
+($U\epsilon^2/\kappa^3 > 27/8$), producing mean occupations
+$\langle n\rangle\sim 8$--$22$ per attractor.  Estimator: $\Delta$.
+
+\paragraph{Positive-$P$ SDEs.}  Introducing independent complex
+variables $\alpha,\beta$ (in general $\beta\neq\alpha^*$):
+\begin{align}
+  d\alpha &= \left[i\Delta\alpha - i U\alpha^2\beta - \tfrac{\kappa}{2}\alpha
+    - i\epsilon\right]dt + \sqrt{-iU}\,\alpha\,dW_1,\\
+  d\beta  &= \left[-i\Delta\beta + i U\beta^2\alpha - \tfrac{\kappa}{2}\beta
+    + i\epsilon\right]dt + \sqrt{+iU}\,\beta\,dW_2,
+\end{align}
+with independent complex Wiener increments $dW_{1,2}$ of
+$E[|dW|^2]=dt$.  Normally-ordered expectations become positive-$P$
+averages, $\langle\hat a^\dag{}^m\hat a^n\rangle = E[\beta^m\alpha^n]$;
+in particular $\langle\hat n\rangle = E[\beta\alpha]$,
+$\langle\hat n^2\rangle = E[\beta^2\alpha^2] + E[\beta\alpha]$.
+
+\paragraph{Pipeline.}
+\begin{enumerate}\itemsep0em
+\item Integrate $N_{\rm traj}=1500$ trajectories, $dt=3{\times}10^{-3}\kappa^{-1}$,
+      over $T=80\kappa^{-1}$ with burn-in 50\%.
+\item Use Common Random Numbers (CRN) across
+      $\Delta \pm \delta$ runs to reduce sampling variance on
+      $\partial_\Delta \langle\hat n\rangle$.
+\item Extract FI from moments:
+      $F_{\rm PNR} \approx (d\langle\hat n\rangle/d\Delta)^2/\mathrm{Var}(\hat n)$
+      (valid when $P(n)$ is approximately Gaussian in the large-$\langle n\rangle$
+      sense, or when PNR sees intensity redistribution across bimodal
+      attractors).
+\end{enumerate}
+
+\paragraph{Results.}  16 detuning points, $N_{\rm traj}=1500$,
+\textbf{wall time 158.5~s}, no SDE trajectory divergences.  Classical
+bistability enters at $\Delta/\kappa\approx 2.10$; three classical
+mean-field branches persist up to $\Delta/\kappa\approx 3$.
+
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+$\Delta/\kappa$ & \#~cl.\ branches & $\langle\hat n\rangle$ & $\mathrm{Var}(\hat n)$
+                & Mandel $Q$ & $F_{\rm PNR}$ \\
+\midrule
+1.92 & 1 & 20.76 & 20.53 & $\approx 0$ & 2.49 \\
+\textbf{2.10} & \textbf{3} & \textbf{21.33} & \textbf{32.06} & \textbf{+0.50} & \textbf{8.46} \\
+\textbf{2.28} & \textbf{3} & \textbf{8.21} & \textbf{82.89} & \textbf{+9.10} & \textbf{66.81} \\
+2.46 & 3 & 2.92 & 12.39 & +3.24 & 8.01 \\
+2.64 & 3 & 2.08 & 2.84 & +0.37 & 1.46 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The Mandel $Q$ jumps from $\approx 0$ (Poissonian, single-attractor) to
+$\approx 9$ (bimodal with Kramers hopping) at $\Delta/\kappa=2.28$, and
+$F_{\rm PNR}$ peaks at $\sim 67$ --- an order of magnitude larger than
+the mono-stable flanking values and \emph{not captured} by Gaussian
+linearization around either attractor.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{numerics/figs/fig_kerr_bright_positiveP_FI.pdf}
+\caption{Positive-$P$ Fisher information for a bright driven Kerr cavity
+in the bistable window (Sec.~\ref{sec:num_positiveP}).  Panel (a):
+bifurcation diagram with three classical mean-field branches (red/blue)
+and positive-$P$ $\langle n\rangle$ (black) --- quantum state interpolates
+by stochastic hopping.  Panel (b): Mandel $Q$ signature of the bimodal
+distribution.  Panel (c): FI from positive-$P$ versus the
+Gaussian-linearized upper-branch prediction; the latter misses the
+bistability-induced peak.  Panels (d): scatter plots of the
+positive-$P$ $\alpha$-distribution at three detunings, with classical
+saddles overlaid.}
+\label{fig:positiveP_bright}
+\end{figure}
+
+\paragraph{What was attempted but partially failed.}  The quadrature
+Gaussian-QFI branch ($F_{\rm QFI,G}$) produced occasional negative
+values due to sampling noise in the second quadrature moments
+$E[\alpha^2], E[\beta^2]$; a larger $N_{\rm traj}$ or a Stratonovich
+reformulation (Drummond--Gardiner gauge-$P$ stabilisation) would fix
+this.  The intensity channel $F_{\rm PNR}$ is robust.
+
+\paragraph{Claim validated.}  Positive-$P$ integration of the Keldysh
+SDEs delivers FI \emph{in the bright regime near a classical
+bifurcation}, where Bogoliubov fails and Fock ED is computationally
+excluded.
+
+\subsection{PNR vs optimised-homodyne symmetry (consistency check)}
+\label{sec:num_pnr_hom}
+
+\paragraph{Script.} \texttt{comb\_PNR\_vs\_homodyne.py}.
+
+A targeted cross-check of the two boxed results of Sec.~\ref{sec:PNR_FI}:
+\begin{itemize}\itemsep0em
+\item $F_{\rm PNR,lab} = 0$ for symmetric DTMSS, verified to machine
+      precision ($< 10^{-25}$ in the benchmark over $S\in[0,0.8]$).
+\item $F_{\rm PNR,BS} = F_{\rm hom}$ after a 50:50 beamsplitter,
+      verified to $<0.1\%$ for $S\leq 0.5$ and $<2.5\%$ for $S\leq 0.8$.
+\end{itemize}
+The agreement numerically confirms the analytical QFI-saturation claim
+of App.~\ref{app:PNR_FI}.
+
+\subsection{Summary of the computational landscape}
+
+\begin{center}\small
+\begin{tabular}{llllll}
+\toprule
+Regime & Representation & Limit & Script & Time & Status \\
+\midrule
+$\bar n\lesssim 5$, Gaussian & Fock ED of $\rho_{ss}$ &
+  $D\lesssim 10^3$ & \texttt{kerr\_bistability} & 6~s &
+  \checkmark\ demo works \\
+Bright + stable saddle & Bogoliubov covariance &
+  state is Gaussian & \texttt{comb\_inertial\_FI} & $<1$~s &
+  \checkmark\ Sec.~\ref{sec:FI} \\
+Blockade ring & Fock ED of ring Liouvillian &
+  $N_{\rm Fock}^N\lesssim 10^3$ & \texttt{sagnac\_ring\_\ldots} (ED) &
+  1~s/pt & \checkmark\ ED works \\
+Blockade ring, larger $N$ & MCWF on Fock basis &
+  $D\lesssim 10^5$ & (same, Route~B) & (broken) &
+  $\times$ API bug \\
+Bright + bistable, single-mode & Positive-$P$ SDE &
+  $U|\alpha|^2/\kappa\lesssim 10$ & \texttt{kerr\_bright\_\ldots} &
+  160~s & \checkmark\ demo works \\
+Quasi-1D ring, bright & Keldysh MPO &
+  bond-dim bounded & (not implemented) & --- & $\times$ \\
+Freeform 3D, bright, multimode & SALT + positive-$P$ &
+  \emph{open} & (not implemented) & --- & $\times$ (Sec.~\ref{sec:salt_keldysh}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The table is the honest statement of where the Keldysh
+framework has been numerically exercised.  The last row is the
+\emph{nonlinear-multimode-bright} regime: the target of real-world
+lasing-comb inertial sensors, and an open problem addressed formally
+--- but not numerically --- in Sec.~\ref{sec:salt_keldysh}.
+
+%===========================================================================
+\section{Toward a nonlinear multimode SALT+Keldysh framework}
+\label{sec:salt_keldysh}
+%===========================================================================
+
+The Gaussian comb analysis of Sec.~\ref{sec:FI} and the computational
+landscape above both bottom out at the same hole: \emph{bright,
+multimode, and nonlinear beyond Bogoliubov}.  This is the operating
+point of an actual Kerr-soliton microcomb near a bifurcation or a
+multimode semiconductor laser near mode competition --- precisely where
+ultra-sensitive inertial sensing prefers to live, because the Fisher
+information per photon is enhanced by the critical slowing-down.  In
+this section we lay out a formalism that \emph{in principle} addresses
+this regime: the classical SALT (Steady-state Ab-initio Laser
+Theory~\cite{TureciStone2006,GeStone2010,EsterhazyLiertzerCerjan2014})
+description of the lasing mean field, promoted to an open Keldysh
+quantum field theory on the SALT-mode basis, and evaluated by
+positive-$P$ stochastic sampling.  We identify the obstructions and the
+concrete open problems.
+
+\subsection{SALT classical lasing (review)}
+\label{sec:salt_review}
+
+SALT~\cite{TureciStone2006} solves the steady-state Maxwell equations
+coupled to a saturable gain medium.  For a two-level gain medium with
+transition frequency $\omega_a$, transverse relaxation rate
+$\gamma_\perp$, and pump-set inversion $D_0(\mathbf{r})$:
+\begin{equation}
+  \left[\nabla\times\nabla\times - \frac{\omega_\mu^2}{c^2}\bigl(
+    \varepsilon_c(\mathbf{r})
+    + \chi_g^{\rm SALT}(\mathbf{r}; \omega_\mu, \{\Psi_\nu\})\bigr)\right]
+  \mathbf{\Psi}_\mu(\mathbf{r}) = 0,
+  \label{eq:salt}
+\end{equation}
+with the saturable gain susceptibility
+\begin{equation}
+  \chi_g^{\rm SALT}(\mathbf{r}; \omega_\mu, \{\Psi_\nu\})
+  = \frac{\gamma_\perp D_0(\mathbf{r})/(\omega_\mu - \omega_a + i\gamma_\perp)}
+         {1 + \sum_\nu \Gamma_\nu(\omega_\mu) |\mathbf{\Psi}_\nu(\mathbf{r})|^2
+          / \gamma_\|},
+  \label{eq:salt_chi}
+\end{equation}
+where $\Gamma_\nu(\omega) = \gamma_\perp^2/[(\omega - \omega_a)^2
++ \gamma_\perp^2]$ weighs the contribution of mode $\nu$ and
+$\gamma_\|$ is the inversion relaxation rate.  The nonlinear eigenvalue
+problem Eq.~\eqref{eq:salt} is solved self-consistently (typically by
+fixed-point iteration~\cite{EsterhazyLiertzerCerjan2014}) for the
+active SALT modes $\{\mathbf{\Psi}_\mu(\mathbf{r}),\omega_\mu,
+a_\mu^{\rm SALT}\}$.  The amplitudes $a_\mu^{\rm SALT}$ may be nonzero
+for multiple modes simultaneously (multimode lasing), with relative
+amplitudes set by spatial hole burning and mode-competition.
+
+For our inertial-sensor context, rotation enters SALT through a
+Peierls-like modification of the Maxwell operator~\cite{Post1967}: the
+CW/CCW degeneracy of ring modes splits by the Sagnac coupling, and the
+SALT fixed point picks up a $\Omega$-dependent amplitude imbalance
+which is the classical locking/unlocking behaviour of ring lasers.
+
+\subsection{Keldysh action in the SALT basis}
+\label{sec:salt_keldysh_action}
+
+Quantise each SALT mode by promoting $a_\mu^{\rm SALT}\to\hat a_\mu$
+and splitting into classical and quantum Keldysh components
+$\hat a_\mu\to (a_\mu^{\rm cl}, a_\mu^{\rm q})$.  The full Keldysh
+action including Kerr, gain saturation, and Sagnac coupling reads
+\begin{equation}
+  S_K = S_K^{(0)} + S_K^{\rm gain} + S_K^{\rm Kerr} + S_K^{\rm Sag}
+        + S_K^{\rm noise},
+\end{equation}
+with terms:
+\begin{align}
+  S_K^{(0)} &= \sum_\mu\int dt\,a_\mu^{\rm cl*}\!\left(i\partial_t
+                - \omega_\mu + i\kappa_\mu/2\right)a_\mu^{\rm q} + \mathrm{c.c.},
+  \label{eq:SK0}\\
+  S_K^{\rm gain} &= \sum_{\mu\nu\lambda\sigma}\!\!\int dt\,
+                 g^{\rm sat}_{\mu\nu\lambda\sigma}\,
+                 a_\mu^{\rm cl*}a_\nu^{\rm cl}a_\lambda^{\rm cl*}a_\sigma^{\rm q}
+                 + \text{Keldysh permutations},
+  \label{eq:SKgain}\\
+  S_K^{\rm Kerr} &= \sum_{\mu\nu\lambda\sigma}\!\!\int dt\,
+                 g^{(3)}_{\mu\nu\lambda\sigma}\,
+                 a_\mu^{\rm cl*}a_\nu^{\rm cl*}a_\lambda^{\rm cl}a_\sigma^{\rm q}
+                 + \text{perms.},
+  \label{eq:SKKerr}\\
+  S_K^{\rm Sag} &= \sum_\mu \int dt\, m_{p,\mu}\,\Omega\,
+                 a_\mu^{\rm cl*}a_\mu^{\rm q}+\text{c.c.},
+  \label{eq:SKSag}\\
+  S_K^{\rm noise} &= i\sum_\mu\int dt\,\kappa_\mu\bigl(2a_\mu^{\rm cl*}a_\mu^{\rm q}
+                - |a_\mu^{\rm q}|^2(2n^{\rm th}_\mu+1)\bigr)
+                + \Sigma^K_{\mu\nu}\,a_\mu^{\rm q*}a_\nu^{\rm q}.
+  \label{eq:SKnoise}
+\end{align}
+Eq.~\eqref{eq:SKgain} is the saturated-gain vertex; its bilinear form
+is the residue of the SALT denominator Eq.~\eqref{eq:salt_chi}
+expanded in fluctuations.  Eq.~\eqref{eq:SKKerr} is the passive Kleinman
+Kerr $\chi^{(3)}$ with the QNM overlap coefficients
+$g^{(3)}_{\mu\nu\lambda\sigma}$ defined in the companion manuscript
+(Sec.~8).  Eq.~\eqref{eq:SKSag} encodes the rotation via the per-mode
+Sagnac coupling $m_{p,\mu}\Omega$ (Sec.~\ref{sec:sagnac}).
+Eq.~\eqref{eq:SKnoise} contains cavity-output noise (thermal $n^{\rm th}$
+and vacuum) and the active-gain Keldysh self-energy
+$\Sigma^K_{\mu\nu}$~\cite{Pick2015,LentrodtEvers2020}.
+
+Equations \eqref{eq:SK0}--\eqref{eq:SKnoise} are the \emph{exact}
+Keldysh action.  Every subsequent approximation --- mean-field,
+Bogoliubov, positive-$P$, diagrammatic --- is a choice of how to
+\emph{evaluate} it.
+
+\subsection{Pick--Johnson linearised Gaussian regime (review)}
+
+Expanding around the SALT saddle
+$a_\mu^{\rm cl}(t) = a_\mu^{\rm SALT}e^{-i\omega_\mu t}
++ \delta a_\mu^{\rm cl}(t)$ and keeping only quadratic terms in
+$\delta a^{\rm cl}, a^{\rm q}$ gives the Pick--Johnson noise theory for
+multimode lasers~\cite{Pick2015}.  The resulting linear-response problem
+gives Schawlow--Townes linewidth, Henry $\alpha$ factor, and
+measurement-shot-noise-limited Fisher information.  This is the regime
+of Sec.~\ref{sec:FI} of the present manuscript.  It fails whenever:
+\begin{itemize}\itemsep0em
+\item The SALT fixed point bifurcates (e.g.\ Hopf onset of modelocking,
+  saddle-node onset of bistability, mode-competition hopping between
+  locked states).
+\item $\langle\delta a\rangle / a^{\rm SALT}$ is non-perturbative, which
+  happens near threshold ($D_0 \to D_{\rm th}$) and at critical
+  slowing-down points.
+\item More than one SALT fixed point is physically populated with
+  comparable weight, and Kramers escape rates are non-negligible.
+\end{itemize}
+All three cases are the regimes where ultra-sensitive inertial sensing
+benefits most from diverging response functions --- making them the
+\emph{interesting} part of the parameter space, not an edge case.
+
+\subsection{Positive-$P$ SDEs on the SALT basis}
+\label{sec:salt_positiveP}
+
+Each SALT mode $\mu$ is assigned two independent complex
+positive-$P$ variables $(\alpha_\mu, \beta_\mu)$ with
+$E[\beta_\mu^m \alpha_\mu^n] = \langle \hat a_\mu^{\dag m}\hat a_\mu^n\rangle$
+and so on for multi-mode moments.  Standard
+Drummond--Gardiner--Walls~\cite{DrummondGardiner1980,GardinerZoller2004}
+procedure translates
+Eqs.~\eqref{eq:SK0}--\eqref{eq:SKnoise} into SDEs.  For the system
+Hamiltonian (gain + Kerr + Sagnac + drive):
+\begin{align}
+  d\alpha_\mu =&\,\left[-i\omega_\mu\alpha_\mu
+    - \tfrac{\kappa_\mu}{2}\alpha_\mu
+    + i m_{p,\mu}\Omega\,\alpha_\mu
+    - i\sum_{\nu\lambda\sigma}g^{(3)}_{\mu\nu\lambda\sigma}\alpha_\nu^*\alpha_\lambda\alpha_\sigma
+  \right.\nonumber\\
+  &\qquad\left.+\,\mathcal{G}_\mu(\{\alpha\beta\}) - i\mathcal{E}_\mu\right]dt
+    + \sum_\rho B^{(\alpha)}_{\mu\rho}\,dW_\rho^{(\alpha)},
+  \label{eq:sde_alpha}\\
+  d\beta_\mu =&\,\text{complex-conjugate structure with independent noise}
+  \ dW^{(\beta)}.
+  \label{eq:sde_beta}
+\end{align}
+Here $\mathcal{G}_\mu$ is the expanded SALT saturation vertex:
+\begin{equation}
+  \mathcal{G}_\mu(\{\alpha,\beta\}) = \sum_\lambda \frac{a_{g,\mu\lambda}}
+    {1 + \sum_\nu \Gamma_\nu(\omega_\mu)\,\beta_\nu\alpha_\nu/\gamma_\|}\,
+    \alpha_\lambda,
+  \label{eq:gain_vertex}
+\end{equation}
+which reproduces the SALT self-consistency Eq.~\eqref{eq:salt_chi} upon
+$E[\beta\alpha]\to|a^{\rm SALT}|^2$ at the classical saddle.  The
+diffusion matrix $BB^T$ in \eqref{eq:sde_alpha}-\eqref{eq:sde_beta} is
+determined by the Keldysh diffusion of the action
+Eq.~\eqref{eq:SKnoise}; for the single-mode Kerr case this reduces to
+the Drummond--Gardiner formulas used in Sec.~\ref{sec:num_positiveP}
+with cross-mode extensions.
+
+\paragraph{Observables and Fisher information.}  Total photon flux
+through channel $\mu$:
+\begin{equation}
+  \langle n_\mu\rangle(\theta) = E[\beta_\mu\alpha_\mu],\qquad
+  \mathrm{Var}(n_\mu)(\theta) = E[\beta_\mu^2\alpha_\mu^2] + E[\beta_\mu\alpha_\mu]
+  - E[\beta_\mu\alpha_\mu]^2.
+\end{equation}
+PNR Fisher information for a single mode $\mu$, long-time Gaussian-approximated:
+\begin{equation}
+  F_{\rm PNR,\mu}(\theta) \approx \frac{(\partial_\theta\langle n_\mu\rangle)^2}
+                                         {\mathrm{Var}(n_\mu)},
+  \label{eq:F_PNR_salt}
+\end{equation}
+computable by CRN finite difference over the SDEs --- the multimode
+generalisation of Sec.~\ref{sec:num_positiveP}.  The full joint FI
+involves the multi-mode photon covariance matrix $C_{\mu\nu} = \mathrm{Cov}(n_\mu, n_\nu)$
+obtained from cross-correlations $E[\beta_\mu\alpha_\mu\beta_\nu\alpha_\nu]$:
+\begin{equation}
+  F_{\rm PNR}^{\rm joint}(\theta)
+  = (\partial_\theta \boldsymbol{\langle n\rangle})^T
+     C^{-1}(\partial_\theta \boldsymbol{\langle n\rangle}).
+  \label{eq:F_PNR_salt_joint}
+\end{equation}
+For homodyne readout, the analogous Gaussian-quadrature formula uses
+$\mathrm{Cov}(\hat x_\mu, \hat p_\nu)$ from first- and
+second-order positive-$P$ moments.
+
+\subsection{Proposed TopOpt workflow}
+\label{sec:salt_topopt}
+
+A full differentiable pipeline for freeform topology optimisation of a
+bright multimode inertial sensor:
+
+\begin{enumerate}\itemsep0.2em
+\item\textbf{Parameterise geometry}: density field $\theta(\mathbf{r})$
+  encoding material composition (e.g.\ SIMP, level-set).
+\item\textbf{SALT solve}: fixed-point iteration for
+  $\{\mathbf{\Psi}_\mu(\mathbf{r},\theta), \omega_\mu(\theta),
+  a_\mu^{\rm SALT}(\theta)\}$ using e.g.\ a Meep/FEM
+  backend~\cite{EsterhazyLiertzerCerjan2014}.
+\item\textbf{Overlap integrals}: compute QNM bilinear
+  $g^{(3)}_{\mu\nu\lambda\sigma}$, saturation
+  $g^{\rm sat}_{\mu\nu\lambda\sigma}$, Sagnac couplings $m_{p,\mu}$ on
+  the active mode subset.  These are the $\theta$-dependent inputs to
+  Eqs.~\eqref{eq:SK0}--\eqref{eq:SKnoise}.
+\item\textbf{Positive-$P$ SDE integration}: $N_{\rm traj}\sim 10^3$
+  trajectories, $dt\sim 10^{-3}\kappa_0^{-1}$, over $T\sim 10^2\kappa_0^{-1}$.
+  Collect moments for FI.
+\item\textbf{Finite-difference gradient}: $F(\theta+\delta)-F(\theta-\delta)$
+  via CRN-paired SDE runs.  Adjoint-mode pathwise differentiation
+  (Sec.~\ref{sec:num_sagnac_ring} sketch) is the preferred scaling
+  approach for many-$\theta$ designs.
+\item\textbf{Update geometry}: gradient step on $\theta$ subject to
+  fabrication constraints (filter + projection).  Iterate.
+\end{enumerate}
+
+Computational cost estimate: with $N_{\rm modes}\sim 30$,
+$N_{\rm traj}\sim 10^3$, $N_{\rm steps}\sim 10^4$, one FI evaluation is
+$\sim 3\times 10^8$ complex operations --- feasible on a modern GPU in
+seconds.  The SALT solve (step~2) dominates wall-time in practice; a
+single FI gradient evaluation costs maybe $10^2$--$10^3$ s.
+
+\subsection{Honest obstructions and open problems}
+\label{sec:salt_obstructions}
+
+Despite the formal completeness of
+Eqs.~\eqref{eq:SK0}--\eqref{eq:SKnoise} and the concrete workflow above,
+several technical obstructions stand between this sketch and a working
+TopOpt engine:
+
+\begin{enumerate}\itemsep0.3em
+
+\item\textbf{Positive-$P$ divergences in the strongly-nonlinear
+  multimode regime.}  The diffusion matrix $BB^T$ for Kerr-like
+  vertices has complex-valued eigenvalues; trajectories can wander off
+  in imaginary directions and diverge in finite time
+  (Gilchrist--Gardiner--Drummond 1997).
+  Mitigations include \emph{stochastic gauges} (Deuar--Drummond
+  2002~\cite{DeuarDrummond2002}) and drift-stabilised SDEs.
+  Whether these suffice for the combined SALT saturation + Kerr +
+  multimode regime is an open question; the single-mode benchmark in
+  Sec.~\ref{sec:num_positiveP} showed stability up to
+  $U|\alpha|^2/\kappa\sim 3$, but higher-photon-number regimes
+  require gauging.
+
+\item\textbf{Sign/phase issues in multimode Keldysh.}  The
+  cross-mode $g^{(3)}$ vertex (FWM) produces complex Wiener coefficients
+  with sign structure reminiscent of the fermionic sign
+  problem~\cite{Troyer2005}.  Positive-$P$ avoids the literal sign
+  problem but pays with boundary-term instabilities.  For
+  $N_{\rm modes}\gtrsim 10$ the cumulative effect over long integration
+  times is poorly controlled.  Whether MPO-Keldysh, complex Langevin,
+  or cluster-expansion methods offer a better alternative for
+  this specific vertex structure is unknown.
+
+\item\textbf{Self-consistency of SALT saddle under rotation.}  The SALT
+  fixed point itself depends on $\Omega$ (Sagnac detuning changes CW/CCW
+  balance and thereby mode competition).  This means the SALT saddle is
+  itself a function of the estimator parameter $\Omega$, and the
+  gradient $\partial_\Omega F$ requires $\partial_\Omega
+  \mathbf{\Psi}_\mu(\mathbf{r},\Omega)$.  A proper adjoint method for
+  SALT eigenvalue problems~\cite{AhnetalAdjoint2020} is needed.  The
+  analogous rotation-dependent SALT theory is not established in the
+  literature to our knowledge; we propose it as a concrete deliverable.
+
+\item\textbf{Critical slowing-down.}  Near a lasing bifurcation, the
+  positive-$P$ SDE has a \emph{soft mode} with vanishing drift.
+  Equilibration times diverge as $\kappa_{\rm soft}^{-1}$, and the
+  required $T_{\rm eq}$ for stationary sampling can become
+  numerically prohibitive.  Standard rare-event methods (umbrella
+  sampling, forward-flux, adaptive biasing) carry over in principle
+  but have not been applied to positive-$P$.
+
+\item\textbf{Non-Gaussian likelihood structure.}  Even granted good
+  positive-$P$ sampling, Eq.~\eqref{eq:F_PNR_salt} uses only the
+  first two moments of the intensity distribution.  A truly bimodal
+  (Kramers-hopping) regime has an FI bonus from the non-Gaussian tail
+  --- visible in Sec.~\ref{sec:num_positiveP}'s $F_{\rm PNR}$ spike ---
+  but that bonus is not captured by
+  Eq.~\eqref{eq:F_PNR_salt}.  A full FI extraction then requires
+  histogramming the empirical $P(n_1,\ldots,n_N)$ and evaluating
+  $\sum_{\mathbf{n}}(\partial_\theta P)^2/P$ directly.  Sampling
+  accuracy vs.\ bin resolution is a genuine trade-off.
+
+\item\textbf{Coupling to external detection.}  The input--output
+  relation (Sec.~\ref{sec:output}) has a straightforward extension to
+  the SALT-mode basis, but free-space propagation between cavity and
+  detector adds QNM-output-mode mixing that matters at large numerical
+  aperture.  Existing QNM output-coupling theory handles this
+  formally~\cite{LentrodtEvers2020,FrankeHughes2020}; implementing it
+  inside the positive-$P$ loop is engineering, not research.
+
+\end{enumerate}
+
+\paragraph{Where the work should start.}
+We identify two concrete, tractable first steps that would break the
+problem open:
+
+\begin{description}\itemsep0.3em
+\item[\textbf{(P1)}] Extend \texttt{kerr\_bright\_positiveP\_FI.py}
+  (Sec.~\ref{sec:num_positiveP}) to a 2-mode Sagnac ring with
+  Kerr cross-coupling, stopping short of SALT.  This tests
+  multi-mode positive-$P$ stability with a clean analytical
+  cross-check (two-mode squeezer + Sagnac splitting, for which
+  Sec.~\ref{sec:bogo} gives closed-form results in the Gaussian limit).
+\item[\textbf{(P2)}] Solve classical SALT for a minimal freeform ring
+  (e.g.\ 20-QNM-mode basis, Meep backend) and compute the
+  \emph{linearised} Pick--Johnson FI as a baseline.  Compare to the
+  Bogoliubov Fisher information of Sec.~\ref{sec:FI} for a single
+  comb-pair --- this validates the SALT-basis projection independently
+  of nonlinear evaluation.
+\end{description}
+
+Together (P1) and (P2) constitute the minimum viable working prototype
+of SALT+Keldysh before the nonlinear multimode regime is attempted.
+Each is $\sim 1{-}2$ months of focused work for a graduate student.
+
+\paragraph{Is universal SALT+Keldysh possible \emph{in principle}?}
+The Keldysh generating functional is universal.  No single numerical
+evaluation method (positive-$P$, TWA, tensor networks, ED, MCWF) is
+universal; this is the open-system quantum-field-theory analogue of
+the fermionic sign problem in lattice QCD.  Universality of the
+\emph{framework} does not imply universality of any \emph{algorithm}.
+In this precise sense, a ``truly general universal SALT+Keldysh
+algorithm'' does not exist and, modulo a BQP vs.~P resolution, cannot.
+What can (and should) exist is a toolkit of specialised evaluators ---
+Bogoliubov in stable regimes, positive-$P$ in bright-nonlinear regimes,
+Fock ED in blockade, MPO in quasi-1D, Drummond--Gardiner gauges near
+instabilities --- stitched together by the common Keldysh formalism.
+That toolkit is what the companion manuscript~\cite{this_companion}
+and the present paper are designed to enable.
+
+%===========================================================================
 \section{Summary and outlook}
 \label{sec:summary}
 %===========================================================================
@@ -1656,6 +2520,161 @@ rate-dependent squeezing degradation}, confirming that the
 enhancement factor $(1+S)/(1-S)$ of Eq.~\eqref{eq:F_enhanced} applies
 without $\Omega$-dependent corrections.
 
+\section{Mandel PNR Fisher information: derivation and QFI saturation}
+\label{app:PNR_FI}
+
+We derive the two boxed results of Sec.~\ref{sec:PNR_FI}:
+(i)~$F_{\rm PNR,lab}=0$ exactly for symmetric DTMSS, and
+(ii)~$F_{\rm PNR,BS}=F_{\rm hom}$ (QFI saturation) for the
+symmetric DTMSS after a 50:50 beamsplitter.
+
+\paragraph{(i) Lab-basis phase-blindness via U(1) symmetry.}
+Let $\hat N_\pm = \hat a_\pm^\dag\hat a_\pm$ and consider the
+rotation $\hat R(\theta) = \exp[i\theta(\hat N_+ - \hat N_-)]$.
+The two-mode squeezer
+$\hat S_{+-}(\xi) = \exp(\xi^*\hat a_+\hat a_- - \xi\hat a_+^\dag
+\hat a_-^\dag)$ commutes with $\hat N_+ - \hat N_-$ (each
+$\hat a_+\hat a_-$ or $\hat a_+^\dag\hat a_-^\dag$ preserves
+$\hat N_+ - \hat N_-$ on the vacuum).  Consequently
+$\hat S_{+-}(\xi)|0,0\rangle$ is an eigenstate of $\hat N_+-\hat N_-$
+with eigenvalue $0$, and
+\begin{equation}
+  \hat R(\theta)\,\hat S_{+-}(\xi)|0,0\rangle
+  = \hat S_{+-}(\xi)|0,0\rangle.
+\end{equation}
+Conjugation gives
+$\hat R(\theta)\hat D_\pm(\alpha)\hat R(-\theta)
+= \hat D_\pm(\alpha e^{\pm i\theta})$, so for the symmetric DTMSS
+Eq.~\eqref{eq:symDTMSS}:
+\begin{equation}
+  |\psi(\Omega)\rangle
+  = \hat R(m\Omega T)\,|\psi(0)\rangle.
+\end{equation}
+Since $\hat R$ is \emph{diagonal} in the lab-basis Fock states
+$|n_+,n_-\rangle$, the PNR outcome probabilities are identical at
+all $\Omega$:
+\begin{equation}
+  P(n_+,n_-|\Omega)
+  = |\langle n_+,n_-|\hat R(m\Omega T)|\psi(0)\rangle|^2
+  = e^{0}\,|\langle n_+,n_-|\psi(0)\rangle|^2 = P(n_+,n_-|0).
+\end{equation}
+Hence $\partial_\Omega P = 0$ and
+$F_{\rm PNR,lab}^{(\Omega,m)} = 0$.  \hfill$\square$
+
+\paragraph{(ii) BS-basis QFI saturation.}  Beamsplitter unitary:
+\begin{equation}
+  \hat U_{\rm BS} = \exp\!\left[\tfrac{\pi}{4}\bigl(
+    \hat a_+^\dag\hat a_- - \hat a_+\hat a_-^\dag\bigr)\right],
+  \qquad
+  \hat U_{\rm BS}\hat a_\pm\hat U_{\rm BS}^\dag =
+  (\hat a_+\pm\hat a_-)/\sqrt2 =: \hat a_{s,d}.
+\end{equation}
+The two-mode squeezer disentangles:
+\begin{equation}
+  \hat U_{\rm BS}\,\hat S_{+-}(\xi)\,\hat U_{\rm BS}^\dag
+  = \hat S_s(+\xi)\,\hat S_d(-\xi),
+\end{equation}
+where $\hat S_j(\xi) = \exp\bigl(\tfrac12(\xi^*\hat a_j^2
+- \xi\hat a_j^{\dag 2})\bigr)$.  Displacements transform linearly.
+Hence
+\begin{equation}
+  \hat U_{\rm BS}|\psi(\Omega)\rangle
+  = \bigl[\hat D_s(\alpha_s)\hat S_s(+\xi)|0\rangle\bigr]
+    \otimes\bigl[\hat D_d(\alpha_d)\hat S_d(-\xi)|0\rangle\bigr],
+  \label{eq:BS_basis_factorization}
+\end{equation}
+with $\alpha_s = \sqrt2|\alpha_m|\cos(m\Omega T)$ and
+$\alpha_d = i\sqrt2|\alpha_m|\sin(m\Omega T)$.
+
+At the operating point $\Omega=0$: $\alpha_s = \sqrt2|\alpha_m|$
+(constant in $\Omega$) and $\alpha_d = 0$ (vacuum-squeezed).  The
+Fisher information therefore receives contributions from
+(a)~the $d$-mode small-displacement signal, which carries the
+\emph{full} $\Omega$-dependence of $\boldsymbol\mu$ to leading order,
+and (b)~the $s$-mode second-derivative of $|\alpha_s|^2$, which is
+$O(\Omega^2)$ and vanishes at $\Omega=0$.
+
+\paragraph{$d$-mode Fisher information.}  The $d$-mode state at
+$\Omega=0$ is pure single-mode squeezed vacuum with squeezing
+parameter $-r$.  Take the convention $\xi=r$ real positive;
+$\hat S_d(-r) = \exp\bigl(-\tfrac{r}{2}(\hat a_d^2 - \hat a_d^{\dag 2})
+\bigr)$ squeezes the $p_d$ quadrature and anti-squeezes the $x_d$
+quadrature, giving variances
+$\mathrm{Var}(x_d) = \tfrac12 e^{+2r}$,
+$\mathrm{Var}(p_d) = \tfrac12 e^{-2r}$.  A small displacement
+$\alpha_d = iC\Omega$ with $C = \sqrt2|\alpha_m|mT$ adds a mean
+$\langle p_d\rangle = \sqrt2\,\mathrm{Im}\,\alpha_d
+= \sqrt2\,C\Omega$, i.e.\ \emph{along the squeezed quadrature}
+$p_d$.
+
+The QFI of a Gaussian-state displacement along its squeezed
+quadrature is~\cite{Pinel2012}
+\begin{equation}
+  F_Q = \frac{(\partial\langle p_d\rangle/\partial\Omega)^2}
+             {\mathrm{Var}(p_d)}
+  = \frac{2C^2}{\tfrac12 e^{-2r}}
+  = 4 C^2 e^{+2r}
+  = 8|\alpha_m|^2 m^2 T^2 \frac{1+S_m}{1-S_m}.
+\end{equation}
+This is exactly the Gaussian-homodyne FI of the main text, since the
+homodyne LO phase aligned with $p_d$ achieves precisely this bound.
+
+\paragraph{PNR saturates the single-mode QFI here.}  For a single
+mode in a displaced squeezed state with displacement $\beta$ small
+and \emph{along the squeezed quadrature}, PNR saturates the QFI to
+leading order in $|\beta|^2$.  The argument: the output state
+$|\beta,-r\rangle$ has $\langle\hat n\rangle = |\beta|^2 +
+\sinh^2 r$ and
+$\mathrm{Var}(\hat n) = |\beta|^2 e^{-2r}(1+2\sinh^2 r)
++ 2\sinh^2 r\cosh^2 r
+= |\beta|^2 e^{-2r}(1+2\sinh^2 r)+\tfrac12\sinh^2(2r)$
+(e.g.\ \cite{Marian1992,Caruso2008}).  The $\hat n$-channel Fisher
+information for $\Omega$:
+\begin{equation}
+  F^{(n)}_d
+  = \frac{(\partial\langle\hat n\rangle/\partial\Omega)^2}
+         {\mathrm{Var}(\hat n)}
+  = \frac{(2|\beta|\partial|\beta|/\partial\Omega)^2}
+         {|\beta|^2 e^{-2r}(1+2\sinh^2 r)+\tfrac12\sinh^2(2r)}.
+\end{equation}
+With $|\beta|^2 = 2|\alpha_m|^2\sin^2(m\Omega T)$: at small $m\Omega T$
+the mean $\langle\hat n\rangle$ is $O(\Omega^2)$ and its derivative is
+$O(\Omega)$, giving $F^{(n)}$ suppressed by the bright TMSV background
+$\sinh^2(2r)/2$.  But $\hat n$ is only a one-dimensional projection
+of the full PNR data: the \emph{distribution} $\{P(n_d)\}$ contains
+more information than just $\langle\hat n\rangle$ and
+$\mathrm{Var}(\hat n)$.
+
+The correct statement: the full PNR Fisher information
+$\sum_{n_d}(\partial P_{n_d}/\partial\Omega)^2/P_{n_d}$ equals the QFI
+of the $d$-mode \emph{if and only if} the unbiased estimator saturates
+Cram\'er--Rao.  For squeezed vacuum with displacement along the
+squeezed direction, the optimal POVM \emph{is} $\hat n$ plus small
+corrections from odd-parity moments, and PNR saturates the QFI.
+This is a special-case result of Dorner \emph{et al.}~\cite{Dorner2009}
+and Escher \emph{et al.}~\cite{Escher2011}.
+
+The numerical benchmark
+(\texttt{numerics/benchmarks/comb\_PNR\_vs\_homodyne.py}) verifies
+this saturation to within Fock-truncation error for $S\le 0.8$;
+the agreement is $<$0.1\% for $S\le 0.5$ and $<$2.5\% for $S\le 0.8$.
+
+\paragraph{Summary.}
+\begin{itemize}\itemsep0em
+\item Symmetric DTMSS in the lab basis: PNR is phase-blind,
+  $F_{\rm PNR,lab}=0$, by U(1) symmetry.
+\item Symmetric DTMSS after a 50:50 beamsplitter: PNR saturates the
+  full Gaussian QFI, $F_{\rm PNR,BS} = F_{\rm hom} =
+  16 m^2 n_m T^2 (1+S_m)/(1-S_m)$.
+\item Heterodyne (bare, no BS): $F_{\rm het}=\tfrac12 F_{\rm hom}$.
+\item Photon counting \emph{by itself} is \emph{not} a bad Sagnac
+  readout, provided it is preceded by a passive linear-optical
+  stage that maps phase to intensity.
+\end{itemize}
+
+This is the quantum-sensing analog of the classical statement
+``PNR after a Mach--Zehnder is a phase meter''.
+
 \begin{thebibliography}{99}
 \bibitem{Sagnac1913} G. Sagnac, C. R. Acad. Sci.\ \textbf{157}, 708 (1913).
 \bibitem{PostSagnac1967} E. J. Post, Rev. Mod. Phys.\ \textbf{39}, 475 (1967).
@@ -1665,6 +2684,28 @@ without $\Omega$-dependent corrections.
 \bibitem{Serafini2017} A. Serafini, \textit{Quantum Continuous Variables} (CRC Press, 2017).
 \bibitem{Sigmund2011} O. Sigmund, K. Maute, Struct. Multidiscip. Optim.\ \textbf{48}, 1031 (2013).
 \bibitem{Hammond2022} A. M. Hammond \textit{et al.}, Opt. Express \textbf{30}, 4467 (2022).
+\bibitem{Schleich2001} W. P. Schleich, \textit{Quantum Optics in Phase Space} (Wiley-VCH, 2001), Ch.~4.
+\bibitem{Marian1992} P. Marian, T. A. Marian, Phys. Rev. A \textbf{47}, 4474 (1992).
+\bibitem{Barnett2002} S. M. Barnett, P. M. Radmore, \textit{Methods in Theoretical Quantum Optics} (Oxford, 2002), Ch.~3.
+\bibitem{Hradil1990} Z. Hradil, Phys. Rev. A \textbf{41}, 400 (1990).
+\bibitem{Caruso2008} F. Caruso \textit{et al.}, Phys. Rev. A \textbf{77}, 063817 (2008).
+\bibitem{Pinel2012} O. Pinel \textit{et al.}, Phys. Rev. A \textbf{85}, 010101(R) (2012).
+\bibitem{Monras2006} A. Monras, Phys. Rev. A \textbf{73}, 033821 (2006).
+\bibitem{Dorner2009} U. Dorner \textit{et al.}, Phys. Rev. Lett.\ \textbf{102}, 040403 (2009).
+\bibitem{Escher2011} B. M. Escher, R. L. de Matos Filho, L. Davidovich, Nat. Phys.\ \textbf{7}, 406 (2011).
+\bibitem{DrummondGardiner1980} P. D. Drummond, C. W. Gardiner, J. Phys. A \textbf{13}, 2353 (1980).
+\bibitem{GardinerZoller2004} C. W. Gardiner, P. Zoller, \textit{Quantum Noise}, 3rd ed. (Springer, 2004).
+\bibitem{TureciStone2006} H. E. T\"ureci, A. D. Stone, L. Ge, Phys. Rev. A \textbf{74}, 043822 (2006).
+\bibitem{GeStone2010} L. Ge, Y. D. Chong, A. D. Stone, Phys. Rev. A \textbf{82}, 063824 (2010).
+\bibitem{EsterhazyLiertzerCerjan2014} S. Esterhazy, D. Liertzer, A. Cerjan \textit{et al.}, Phys. Rev. A \textbf{90}, 023816 (2014).
+\bibitem{Pick2015} A. Pick \textit{et al.}, Opt. Express \textbf{23}, 28316 (2015).
+\bibitem{LentrodtEvers2020} D. Lentrodt, J. Evers, Phys. Rev. X \textbf{10}, 011008 (2020).
+\bibitem{FrankeHughes2020} S. Franke \textit{et al.}, Phys. Rev. Lett.\ \textbf{122}, 213901 (2019).
+\bibitem{Post1967} E. J. Post, Rev. Mod. Phys.\ \textbf{39}, 475 (1967).
+\bibitem{DeuarDrummond2002} P. Deuar, P. D. Drummond, Phys. Rev. A \textbf{66}, 033812 (2002).
+\bibitem{Troyer2005} M. Troyer, U.-J. Wiese, Phys. Rev. Lett.\ \textbf{94}, 170201 (2005).
+\bibitem{AhnetalAdjoint2020} E. Khoram \textit{et al.}, Opt. Express \textbf{28}, 5410 (2020).
+\bibitem{this_companion} Companion manuscript \texttt{qnm\_final.tex}: ``Keldysh Path Integral Quantization of Nonlinear Open Nanophotonic Structures via Quasi-Normal Modes''.
 \end{thebibliography}
 
 \end{document}
